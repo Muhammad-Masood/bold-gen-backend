@@ -11,8 +11,12 @@ fastapi = "^0.115.7"
 sqlmodel = "^0.0.22"
 uvicorn = {extras = ["standard"], version = "^0.34.0"}
 pydantic = "^2.10.6"
-
+requests = "^2.32.3"
+passlib = "^1.7.4"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+start = "bold-gen-backend.main:start"
