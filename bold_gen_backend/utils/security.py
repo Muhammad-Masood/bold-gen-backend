@@ -9,18 +9,19 @@ from email.mime.text import MIMEText
 import smtplib
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from fastapi.requests import Request
 
-load_dotenv()
+_: bool = load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECRET_KEY = secrets.token_urlsafe(32)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 EMAIL_RESET_TOKEN_EXPIRE_MINUTES= 60
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.example.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
-SMTP_USER = os.getenv("SMTP_USER", "your-email@example.com")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "your-email-password")
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = int(os.getenv("SMTP_PORT"))
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
 PROJECT_NAME = os.getenv("PROJECT_NAME")
 CLIENT_URL = os.getenv("CLIENT_URL")
 
@@ -55,9 +56,19 @@ def verify_token(token: str) -> str | None:
     except jwt.PyJWTError:
         return None
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_token(request: Request) -> str:
+    token = request._cookies.get("Authorization")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    # Remove "Bearer " prefix if present
+    if token.startswith("Bearer "):
+        token = token[len("Bearer "):]
+    return token
+
+def get_current_user(token: str = Depends(get_token)):
     try:
         payload:dict = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        print(payload)
         email: str = payload.get("sub")
         if email is None:
             raise HTTPException(status_code=401, detail="Invalid token")

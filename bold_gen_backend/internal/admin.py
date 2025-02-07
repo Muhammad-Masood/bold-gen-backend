@@ -9,10 +9,11 @@ router  = APIRouter(prefix="/admin",tags=["admin"])
 def home():
     return {"message": "Admin Router"}
 
-@router.get('/')
-def get_users(db: Session = Depends(get_session)):
+@router.get('/users')
+def get_users(db: Session = Depends(get_session),  _=Depends(require_admin)):
     return get_all_users(db=db)
 
 @router.get("/dashboard")
-def admin_dashboard(admin=Depends(require_admin)):
+def admin_dashboard(_=Depends(require_admin)):
     return {"message": "Welcome to the admin dashboard"}
+

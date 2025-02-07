@@ -1,18 +1,17 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from contextlib import asynccontextmanager
-from .database.connection import perform_migration
-from .routers import landlord, buyer, contractor, tennat, auth
-from .internal import admin
+from database.connection import perform_migration
+from routers import landlord, buyer, contractor, tennat, auth
+from internal import admin
 from typing import Annotated
-import uvicorn
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Creating tables..")
-    perform_migration()
+    # perform_migration()
     yield
 
-app = FastAPI(title="Bold Generations")
+app = FastAPI(title="Bold Generations", lifespan=lifespan)
 
 # def start():
 #     """Launched with `poetry run start` at root level"""

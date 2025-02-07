@@ -3,15 +3,17 @@ from database.models.user import User, UserLogin, Token, PasswordRecoverMessage,
 from sqlmodel import Session, select
 from utils.security import hash_password, verify_password, create_access_token, generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token
 
-def store_new_user(session: Session, user: User):
-    existing_user = session.get(User, user.email)
+def store_new_user(db: Session, user: User):
+    existing_user = db.exec(select(User).where(User.email == user.email)).first()
+    print(existing_user)
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
     hashed_password: str = hash_password(user.password)
     new_user = User(full_name=user.full_name, email=user.email, password=hashed_password)
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
+    print(new_user)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
 
 def authenticate_user(user: UserLogin, db: Session):
     user_found: User | None = db.exec(select(User).where(User.email == user.email)).first()
@@ -22,7 +24,7 @@ def authenticate_user(user: UserLogin, db: Session):
     return user_found
 
 def login_user_for_access_token(user: UserLogin, db: Session) -> Token:
-    user = authenticate_user(user.email, user.password, db)
+    user = authenticate_user(user, db)
     access_token = create_access_token({"sub": user.email})
     token: Token = Token(access_token=access_token, token_type="bearer")
     return token
