@@ -4,6 +4,11 @@ from database.connection import perform_migration
 from routers import landlord, buyer, contractor, tennat, auth
 from internal import admin
 from typing import Annotated
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "http://localhost:3000",
+]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -12,6 +17,13 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="Bold Generations", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # def start():
 #     """Launched with `poetry run start` at root level"""

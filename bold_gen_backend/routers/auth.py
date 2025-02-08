@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from services.auth_service import store_new_user, login_user_for_access_token, get_user_by_email, recover_user_password, reset_user_password, authenticate_user
+from services.auth_service import store_new_user, login_user_for_access_token, recover_user_password, reset_user_password, authenticate_user, get_current_user
 from database.models.user import User, UserLogin, Token
 from database.connection import get_session
 from fastapi import Depends
@@ -26,8 +26,19 @@ def login_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: S
     print(form_data.username, form_data.password)
     token: Token = login_user_for_access_token(user=UserLogin(email=form_data.username, password=form_data.password), db=db)
     response = JSONResponse(token.model_dump())    
-    response.set_cookie(key="Authorization", value=f"Bearer {token.access_token}", httponly=True)
+    response.set_cookie(key="Authorization", value=f"Bearer {token.access_token}", httponly=True, secure=False, samesite="Lax")
     return response
+
+@router.post("/logout")
+def logout():
+    response = JSONResponse({"message": "User logged out successfully"})
+    response.delete_cookie("Authorization")
+    return response
+
+@router.get('/me')
+def get_user(db: Session = Depends(get_session)):
+    user = get_current_user(db=db)
+    return {"user": user}
 
 @router.post('/forget-password')
 def forget_password(user: UserLogin, db: Session = Depends(get_session)):

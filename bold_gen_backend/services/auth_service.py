@@ -1,10 +1,27 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from database.models.user import User, UserLogin, Token, PasswordRecoverMessage, PasswordReset
 from sqlmodel import Session, select
-from utils.security import hash_password, verify_password, create_access_token, generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token
+from utils.security import hash_password, verify_password, create_access_token, generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, get_token, verify_token
+import jwt
+
+def get_current_user(db: Session, token: str = Depends(get_token)):
+    try:
+        email = verify_token(token)
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        user = get_user_by_email(email=email, db=db)
+        return user
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+def get_user_by_email(email: str, db: Session) -> User:
+    user = db.exec(select(User).where(User.email == email)).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 def store_new_user(db: Session, user: User):
-    existing_user = db.exec(select(User).where(User.email == user.email)).first()
+    existing_user = get_user_by_email(user.email, db)
     print(existing_user)
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
@@ -16,8 +33,8 @@ def store_new_user(db: Session, user: User):
     db.refresh(new_user)
 
 def authenticate_user(user: UserLogin, db: Session):
-    user_found: User | None = db.exec(select(User).where(User.email == user.email)).first()
-    if not user_found or not verify_password(user.password, user_found.password):
+    user_found: User = get_user_by_email(user.email, db)
+    if not verify_password(user.password, user_found.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},)
@@ -28,14 +45,6 @@ def login_user_for_access_token(user: UserLogin, db: Session) -> Token:
     access_token = create_access_token({"sub": user.email})
     token: Token = Token(access_token=access_token, token_type="bearer")
     return token
-
-
-def get_user_by_email(email: str, db: Session) -> User:
-    user = db.exec(select(User).where(User.email == email)).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-            detail="The user with this email does not exist in the system")
-    return user
 
 def recover_user_password(user: UserLogin, db: Session) -> PasswordRecoverMessage:
     """

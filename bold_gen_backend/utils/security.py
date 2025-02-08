@@ -53,8 +53,10 @@ def verify_token(token: str) -> str | None:
         if email is None:
             return None
         return email
-    except jwt.PyJWTError:
-        return None
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 def get_token(request: Request) -> str:
     token = request._cookies.get("Authorization")
@@ -64,18 +66,6 @@ def get_token(request: Request) -> str:
     if token.startswith("Bearer "):
         token = token[len("Bearer "):]
     return token
-
-def get_current_user(token: str = Depends(get_token)):
-    try:
-        payload:dict = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        print(payload)
-        email: str = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return {"email": email}
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
 
 def generate_password_reset_token(email: str) -> str:
     delta = timedelta(hours=EMAIL_RESET_TOKEN_EXPIRE_MINUTES)
