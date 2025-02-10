@@ -14,8 +14,8 @@ def get_all_users(db: Session):
     users = db.exec(select(User)).all()
     return users
 
-def require_admin(db: Session = Depends(get_session)):
-    user = get_current_user(db)
+def require_admin(db: Session, token: str):
+    user = get_current_user(db, token)
     if user.email != ADMIN_EMAIL:
         raise HTTPException(status_code=403, detail="Admin access required")
     return user

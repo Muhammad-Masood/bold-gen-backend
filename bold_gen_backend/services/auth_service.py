@@ -4,8 +4,9 @@ from sqlmodel import Session, select
 from utils.security import hash_password, verify_password, create_access_token, generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, get_token, verify_token
 import jwt
 
-def get_current_user(db: Session, token: str = Depends(get_token)):
+def get_current_user(db: Session, token: str):
     try:
+        print("get_current_user -> token -> ", token)
         email = verify_token(token)
         if email is None:
             raise HTTPException(status_code=401, detail="Invalid token")
@@ -21,9 +22,8 @@ def get_user_by_email(email: str, db: Session) -> User:
     return user
 
 def store_new_user(db: Session, user: User):
-    existing_user = get_user_by_email(user.email, db)
-    print(existing_user)
-    if existing_user:
+    user_exists = db.exec(select(User).where(User.email == user.email)).first()
+    if user_exists:
         raise HTTPException(status_code=400, detail="User already exists")
     hashed_password: str = hash_password(user.password)
     new_user = User(full_name=user.full_name, email=user.email, password=hashed_password)

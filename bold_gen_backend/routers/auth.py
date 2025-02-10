@@ -8,6 +8,9 @@ from sqlmodel import Session
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer
+from utils.security import get_token
+from typing import Annotated
+from fastapi import Cookie
 
 router  = APIRouter(prefix="/auth",tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -36,8 +39,8 @@ def logout():
     return response
 
 @router.get('/me')
-def get_user(db: Session = Depends(get_session)):
-    user = get_current_user(db=db)
+def get_user(db: Session = Depends(get_session), token: str = Depends(get_token)):
+    user = get_current_user(db=db, token=token)
     return {"user": user}
 
 @router.post('/forget-password')

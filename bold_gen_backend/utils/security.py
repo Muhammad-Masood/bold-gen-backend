@@ -9,7 +9,8 @@ from email.mime.text import MIMEText
 import smtplib
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.requests import Request
+from fastapi import Cookie, Request
+from typing import Annotated
 
 _: bool = load_dotenv()
 
@@ -48,8 +49,10 @@ def create_access_token(data: dict) -> str:
 
 def verify_token(token: str) -> str | None:
     try:
+        print(token)
         payload: dict = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
+        print(email)
         if email is None:
             return None
         return email
@@ -58,8 +61,10 @@ def verify_token(token: str) -> str | None:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+# def get_token(request: Request) -> str:
 def get_token(request: Request) -> str:
-    token = request._cookies.get("Authorization")
+    token = request._cookies.get("Authorization") or request.headers.get("Authorization")
+    print(token)
     if not token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     # Remove "Bearer " prefix if present
