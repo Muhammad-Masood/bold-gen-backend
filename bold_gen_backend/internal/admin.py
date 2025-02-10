@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from database.connection import get_session
+from bold_gen_backend.database.connection import get_session
 from sqlmodel import Session
-from services.admin_service import get_all_users, require_admin
-from utils.security import get_token
+from bold_gen_backend.services.admin_service import get_all_users, require_admin
+from bold_gen_backend.utils.security import get_token
 
 router  = APIRouter(prefix="/admin",tags=["admin"])
 

@@ -1,10 +1,10 @@
 from fastapi import HTTPException, status, Depends
-from database.models.user import User, UserLogin, Token, PasswordRecoverMessage, PasswordReset
+from bold_gen_backend.database.models.user import User, UserLogin, Token, PasswordRecoverMessage, PasswordReset
 from sqlmodel import Session, select
-from services.auth_service import get_current_user
+from bold_gen_backend.services.auth_service import get_current_user
 import os
 from dotenv import load_dotenv
-from database.connection import get_session
+from bold_gen_backend.database.connection import get_session
 
 load_dotenv()
 

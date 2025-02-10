@@ -1,14 +1,14 @@
 from fastapi import APIRouter
-from services.auth_service import store_new_user, login_user_for_access_token, recover_user_password, reset_user_password, authenticate_user, get_current_user
-from database.models.user import User, UserLogin, Token
-from database.connection import get_session
+from bold_gen_backend.services.auth_service import store_new_user, login_user_for_access_token, recover_user_password, reset_user_password, authenticate_user, get_current_user
+from bold_gen_backend.database.models.user import User, UserLogin, Token
+from bold_gen_backend.database.connection import get_session
 from fastapi import Depends
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
 from typing import Annotated
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer
-from utils.security import get_token
+from bold_gen_backend.utils.security import get_token
 from typing import Annotated
 from fastapi import Cookie
 

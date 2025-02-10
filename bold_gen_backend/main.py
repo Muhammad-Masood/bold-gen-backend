@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, Header
 from contextlib import asynccontextmanager
-from database.connection import perform_migration
-from routers import landlord, buyer, contractor, tennat, auth
-from internal import admin
+from .database.connection import perform_migration
+from .routers import landlord, buyer, contractor, tennat, auth
+from .internal import admin
 from typing import Annotated
 from fastapi.middleware.cors import CORSMiddleware
 
