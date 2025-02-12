@@ -20,3 +20,6 @@ def admin_dashboard(db: Session = Depends(get_session), token: str = Depends(get
     admin = require_admin(db, token)
     return {"message": "Welcome to the admin dashboard"}
 
+@router.get('/properties')
+def get_all_properties():
+    pass

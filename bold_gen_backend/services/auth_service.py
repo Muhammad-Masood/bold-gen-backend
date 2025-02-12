@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status
 from bold_gen_backend.database.models.user import User, UserLogin, Token, PasswordRecoverMessage, PasswordReset
 from sqlmodel import Session, select
 from bold_gen_backend.utils.security import hash_password, verify_password, create_access_token, generate_password_reset_token, generate_reset_password_email, send_email, verify_password_reset_token, get_token, verify_token

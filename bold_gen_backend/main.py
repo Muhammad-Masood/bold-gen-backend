@@ -19,7 +19,7 @@ origins = [
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Creating tables..")
-    # perform_migration()
+    perform_migration()
     yield
 
 app = FastAPI(title="Bold Generations", lifespan=lifespan)
